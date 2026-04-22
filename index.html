@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>قالب تقرير نشاط مدرسي</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f0f0f0; direction: rtl; }
+  .app { display: flex; gap: 0; min-height: 100vh; }
+
+  /* FORM PANEL */
+  .form-panel { width: 400px; min-width: 340px; background: #fff; padding: 20px; overflow-y: auto; border-left: 2px solid #ddd; }
+  .form-panel h2 { font-size: 16px; font-weight: 700; color: #1a5276; margin-bottom: 16px; border-bottom: 2px solid #1a5276; padding-bottom: 8px; }
+  .field-group { margin-bottom: 12px; }
+  .field-group label { display: block; font-size: 12px; font-weight: 600; color: #444; margin-bottom: 4px; }
+  .field-group input, .field-group textarea, .field-group select {
+    width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px;
+    font-family: inherit; direction: rtl; background: #fafafa;
+  }
+  .field-group textarea { resize: vertical; min-height: 70px; }
+  .field-group input:focus, .field-group textarea:focus { outline: none; border-color: #1a5276; background: #fff; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .section-title { font-size: 13px; font-weight: 700; color: #1a5276; background: #eaf0fb; padding: 6px 10px; border-radius: 5px; margin: 14px 0 8px; }
+
+  .obj-item { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 6px; }
+  .obj-item textarea { flex: 1; min-height: 50px; font-size: 12px; }
+  .btn-remove { background: #e74c3c; color: #fff; border: none; border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 13px; flex-shrink: 0; }
+  .btn-add { background: #1a5276; color: #fff; border: none; border-radius: 5px; cursor: pointer; padding: 7px 14px; font-size: 12px; margin-top: 4px; }
+
+  .img-item { margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; padding: 8px; background: #fafafa; }
+  .img-item label { font-size: 11px; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+  .img-item input[type=text] { margin-top: 5px; }
+  .img-item input[type=file] { font-size: 11px; }
+
+  .btn-print { width: 100%; background: #27ae60; color: #fff; border: none; border-radius: 6px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+  .btn-print:hover { background: #219a52; }
+
+  /* PREVIEW PANEL */
+  .preview-panel { flex: 1; padding: 20px; overflow-y: auto; }
+  .report-wrap { width: 794px; margin: 0 auto; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+
+  /* REPORT STYLES */
+  .report { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: rtl; width: 794px; }
+
+  /* ======= NEW 3-PART HEADER ======= */
+  .header-grid {
+    display: grid;
+    grid-template-columns: 1fr 140px 1fr;
+    border: 2px solid #1a5276;
+    margin: 14px 14px 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .header-right, .header-left {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .header-right { border-left: 2px solid #1a5276; text-align: right; }
+  .header-left  { border-right: 2px solid #1a5276; text-align: right; }
+
+  .header-line { display: flex; align-items: baseline; gap: 5px; }
+  .header-main { font-weight: 700; color: #1a5276; font-size: 13px; }
+  .header-sub  { font-weight: 700; color: #1a5276; font-size: 12px; }
+  .header-lbl  { font-weight: 700; color: #1a5276; font-size: 11px; white-space: nowrap; }
+  .header-val  { color: #000; font-size: 12px; font-weight: 600; }
+
+  .header-center {
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px; background: #f7faff;
+  }
+  .header-center img { max-width: 100%; max-height: 110px; object-fit: contain; }
+  /* ================================= */
+
+  .report-title-bar {
+    background: rgba(26, 82, 118, 0.12);
+    color: #1a5276;
+    border: 2px solid #1a5276;
+    text-align: center;
+    padding: 10px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 14px auto 0;
+    border-radius: 30px;
+    display: table;
+    max-width: calc(100% - 28px);
+  }
+
+  .meta-bar { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid #1a5276; margin: 0 14px; }
+  .meta-col { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-left: 2px solid #1a5276; font-size: 13px; }
+  .meta-col:last-child { border-left: none; }
+  .meta-label { font-weight: 700; color: #1a5276; white-space: nowrap; }
+  .meta-val { color: #000; font-weight: 600; }
+
+  .meta-side { display: flex; flex-direction: column; border: 2px solid #1a5276; border-top: none; margin: 0 14px; }
+  .meta-side-row { display: flex; justify-content: space-between; border-bottom: 1.5px solid #1a5276; font-size: 12px; }
+  .meta-side-row:last-child { border-bottom: none; }
+  .meta-side-cell { padding: 5px 12px; display: flex; gap: 5px; align-items: center; flex: 1; border-left: 1.5px solid #1a5276; }
+  .meta-side-cell:last-child { border-left: none; }
+
+  .section-box { border: 2px solid #1a5276; border-radius: 4px; padding: 10px 12px; }
+  .section-box.full { margin-bottom: 8px; }
+  .sec-head {
+    background: rgba(26, 82, 118, 0.12);
+    color: #1a5276;
+    border: 1.5px solid #1a5276;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    display: inline-block;
+  }
+
+  .obj-list { list-style: none; padding: 0; }
+  .obj-list li { font-size: 12px; color: #000; font-weight: 500; padding: 4px 0; border-bottom: 1px dotted #ccc; display: flex; gap: 6px; }
+  .obj-list li:last-child { border-bottom: none; }
+  .obj-list li::before { content: "•"; color: #1a5276; font-weight: 900; font-size: 16px; line-height: 1; }
+  .obj-list li.empty { color: #999; font-style: italic; font-weight: 400; }
+  .obj-list li.empty::before { content: "•"; color: #ccc; }
+
+  .shawahid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 14px; }
+  .shawahid-item { border: 2px solid #1a5276; border-radius: 4px; overflow: hidden; text-align: center; }
+  .shawahid-img { width: 100%; height: 120px; object-fit: cover; display: block; background: #eee; }
+  .shawahid-img-placeholder { width: 100%; height: 120px; background: #d0d8e4; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #555; }
+  .shawahid-cap { background: #1a5276; color: #fff; font-size: 11px; padding: 4px 8px; font-weight: 600; min-height: 22px; }
+  .shawahid-cap.empty { background: #95a5b8; font-style: italic; }
+
+  .pos-box { border: 2px solid #1a5276; margin: 0 14px 10px; border-radius: 4px; padding: 10px 14px; }
+  .pos-text { font-size: 12px; color: #000; line-height: 1.7; font-weight: 500; }
+  .pos-bold { font-weight: 700; color: #1a5276; }
+
+  .footer-bar { background: #eaf0fb; color: #000; display: flex; justify-content: space-between; margin: 0 14px 14px; padding: 10px 16px; border-radius: 0 0 4px 4px; font-size: 13px; font-weight: 700; border: 2px solid #1a5276; border-top: none; }
+
+  .placeholder { color: #bbb; font-style: italic; }
+
+  /* Force color printing for PDF export */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  @media print {
+    html, body { background: #fff !important; }
+    .form-panel { display: none !important; }
+    .preview-panel { padding: 0 !important; }
+    .report-wrap { box-shadow: none !important; width: 100% !important; }
+    .report { width: 100% !important; }
+    @page { margin: 8mm; size: A4; }
+
+    /* Force backgrounds and colors to print */
+    .top-bar, .report-title-bar, .sec-head, .footer-bar,
+    .shawahid-cap, .header-center {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    /* Preserve dark text for values */
+    .header-val, .meta-val, .obj-list li, .pos-text {
+      color: #000 !important;
+    }
+    .header-main, .header-sub, .header-lbl, .meta-label, .pos-bold {
+      color: #1a5276 !important;
+    }
+    /* Keep rounded title and section heads with translucent bg */
+    .report-title-bar {
+      background: rgba(26, 82, 118, 0.12) !important;
+      color: #1a5276 !important;
+      border: 2px solid #1a5276 !important;
+    }
+    .sec-head {
+      background: rgba(26, 82, 118, 0.12) !important;
+      color: #1a5276 !important;
+      border: 1.5px solid #1a5276 !important;
+    }
+    /* Footer with black text */
+    .footer-bar {
+      background: #eaf0fb !important;
+      color: #000 !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- FORM PANEL -->
+  <div class="form-panel">
+    <h2>✏️ بيانات التقرير</h2>
+
+    <div class="section-title">🏛️ الهيدر (الترويسة)</div>
+
+    <div class="field-group">
+      <label>اسم المنطقة (تُكمل عبارة "الإدارة العامة للتعليم بمنطقة")</label>
+      <input type="text" id="f_admin" placeholder="مثال: مكة المكرمة" oninput="render()">
+    </div>
+    <div class="field-group">
+      <label>اسم المدرسة</label>
+      <input type="text" id="f_school" placeholder="اكتب اسم المدرسة" oninput="render()">
+    </div>
+
+    <div class="row2">
+      <div class="field-group">
+        <label>تاريخ إعداد التقرير</label>
+        <input type="text" id="f_date" placeholder="1447/00/00" oninput="render()">
+      </div>
+      <div class="field-group">
+        <label>الفصل الدراسي</label>
+        <select id="f_sem" onchange="render()">
+          <option value="">-- اختر --</option>
+          <option value="الفصل الدراسي الأول">الفصل الدراسي الأول</option>
+          <option value="الفصل الدراسي الثاني">الفصل الدراسي الثاني</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>الصف الدراسي</label>
+      <input type="text" id="f_grade" placeholder="مثال: الرابع أ" oninput="render()">
+    </div>
+
+    <div class="section-title">📝 بيانات التقرير</div>
+
+    <div class="field-group">
+      <label>عنوان التقرير / اسم النشاط</label>
+      <input type="text" id="f_title" placeholder="مثال: تقرير تفعيل حصة نشاط عن ..." oninput="render()">
+    </div>
+    <div class="row2">
+      <div class="field-group">
+        <label>اسم المنفذ</label>
+        <input type="text" id="f_name" placeholder="اكتب اسم المنفذ" oninput="render()">
+      </div>
+      <div class="field-group">
+        <label>التخصص</label>
+        <input type="text" id="f_spec" placeholder="اكتب التخصص" oninput="render()">
+      </div>
+    </div>
+    <div class="field-group">
+      <label>مكان التنفيذ</label>
+      <input type="text" id="f_place" placeholder="داخل الفصل / الساحة ..." oninput="render()">
+    </div>
+    <div class="field-group">
+      <label>نسبة تحقيق الهدف</label>
+      <input type="text" id="f_pct" placeholder="مثال: 100%" oninput="render()">
+    </div>
+
+    <div class="section-title">📌 الأهداف</div>
+    <div class="field-group">
+      <label>اكتب كل هدف في سطر مستقل (اضغط Enter للانتقال لهدف جديد)</label>
+      <textarea id="f_objectives" rows="6" style="min-height:130px;" placeholder="الهدف الأول&#10;الهدف الثاني&#10;الهدف الثالث&#10;..." oninput="render()"></textarea>
+    </div>
+
+    <div class="section-title">📷 الشواهد (4 صور)</div>
+    <div id="img-list"></div>
+
+    <div class="section-title">✅ الإيجابيات</div>
+    <div class="field-group">
+      <label>عنوان الإيجابية</label>
+      <input type="text" id="f_pos_title" placeholder="اكتب عنوان الإيجابية" oninput="render()">
+    </div>
+    <div class="field-group">
+      <label>نص الإيجابية</label>
+      <textarea id="f_pos_text" placeholder="اكتب وصف الإيجابية هنا..." oninput="render()"></textarea>
+    </div>
+
+    <div class="section-title">👤 المسؤولون</div>
+    <div class="row2">
+      <div class="field-group">
+        <label>رائد النشاط</label>
+        <input type="text" id="f_leader" placeholder="اسم رائد النشاط" oninput="render()">
+      </div>
+      <div class="field-group">
+        <label>مدير المدرسة</label>
+        <input type="text" id="f_principal" placeholder="اسم مدير المدرسة" oninput="render()">
+      </div>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+  </div>
+
+  <!-- PREVIEW PANEL -->
+  <div class="preview-panel">
+    <div class="report-wrap">
+      <div class="report" id="report-output"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var images = [
+    { label: "", src: null },
+    { label: "", src: null },
+    { label: "", src: null },
+    { label: "", src: null }
+  ];
+
+  function g(id) { return document.getElementById(id); }
+
+  function buildImgUI() {
+    var c = g('img-list'); c.innerHTML = '';
+    images.forEach(function(img, i) {
+      var d = document.createElement('div'); d.className = 'img-item';
+      d.innerHTML = '<label>صورة '+(i+1)+'</label>'
+        +'<input type="file" accept="image/*" onchange="handleImg(event,'+i+')">'
+        +'<input type="text" placeholder="التسمية التوضيحية للصورة '+(i+1)+'" value="'+img.label+'" oninput="images['+i+'].label=this.value;render()">';
+      c.appendChild(d);
+    });
+  }
+
+  function handleImg(e, i) {
+    var f = e.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function(ev) { images[i].src = ev.target.result; render(); };
+    r.readAsDataURL(f);
+  }
+
+  function ph(val, placeholder) {
+    if (val && val.trim() !== '') return esc(val);
+    return '<span class="placeholder">'+esc(placeholder)+'</span>';
+  }
+
+  function render() {
+    var admin = g('f_admin').value;
+    var school = g('f_school').value;
+    var title = g('f_title').value;
+    var name = g('f_name').value;
+    var spec = g('f_spec').value;
+    var sem = g('f_sem').value;
+    var grade = g('f_grade').value;
+    var date = g('f_date').value;
+    var place = g('f_place').value;
+    var pct = g('f_pct').value;
+    var posTitle = g('f_pos_title').value;
+    var posText = g('f_pos_text').value;
+    var leader = g('f_leader').value;
+    var principal = g('f_principal').value;
+
+    var objectivesRaw = g('f_objectives').value;
+    var objectives = objectivesRaw.split(/\r?\n/).map(function(s){return s.trim();}).filter(function(s){return s !== '';});
+
+    var objHTML;
+    if (objectives.length === 0) {
+      objHTML = '<li class="empty">اكتب الأهداف في الحقل الجانبي، كل سطر يمثّل هدفاً ...</li>';
+    } else {
+      objHTML = objectives.map(function(o) {
+        return '<li>'+esc(o)+'</li>';
+      }).join('');
+    }
+
+    var imgHTML = images.map(function(img, i) {
+      var imgEl = img.src
+        ? '<img class="shawahid-img" src="'+img.src+'">'
+        : '<div class="shawahid-img-placeholder">انقر لرفع صورة</div>';
+      var capClass = (img.label && img.label.trim() !== '') ? 'shawahid-cap' : 'shawahid-cap empty';
+      var capText = (img.label && img.label.trim() !== '') ? esc(img.label) : 'تسمية الصورة '+(i+1);
+      return '<div class="shawahid-item">'+imgEl+'<div class="'+capClass+'">'+capText+'</div></div>';
+    }).join('');
+
+    var logoHTML = '<img src="assets/moe-logo.png" alt="شعار وزارة التعليم">';
+
+    // ======= NEW 3-PART HEADER =======
+    var headerHTML =
+      '<div class="header-grid">'
+        +'<div class="header-right">'
+          +'<div class="header-main">المملكة العربية السعودية</div>'
+          +'<div class="header-sub">وزارة التعليم</div>'
+          +'<div class="header-line"><span class="header-lbl">الإدارة العامة للتعليم بمنطقة</span> <span class="header-val">'+ph(admin, '............')+'</span></div>'
+          +'<div class="header-line"><span class="header-lbl">المدرسة :</span> <span class="header-val">'+ph(school, '............')+'</span></div>'
+        +'</div>'
+        +'<div class="header-center">'+logoHTML+'</div>'
+        +'<div class="header-left">'
+          +'<div class="header-line"><span class="header-lbl">التاريخ :</span> <span class="header-val">'+ph(date, '............')+'</span></div>'
+          +'<div class="header-line"><span class="header-lbl">الفصل الدراسي :</span> <span class="header-val">'+ph(sem, '............')+'</span></div>'
+          +'<div class="header-line"><span class="header-lbl">الصف :</span> <span class="header-val">'+ph(grade, '............')+'</span></div>'
+        +'</div>'
+      +'</div>';
+
+    g('report-output').innerHTML =
+      headerHTML
+
+      +'<div class="report-title-bar">'+ph(title, 'عنوان التقرير / اسم النشاط')+'</div>'
+
+      +'<div class="meta-bar">'
+        +'<div class="meta-col"><span class="meta-label">المـنـفـذ :</span><span class="meta-val">'+ph(name, '............')+'</span></div>'
+        +'<div class="meta-col"><span class="meta-label">التخصص :</span><span class="meta-val">'+ph(spec, '............')+'</span></div>'
+      +'</div>'
+
+      +'<div class="meta-side">'
+        +'<div class="meta-side-row">'
+          +'<div class="meta-side-cell"><span class="meta-label">مكان التنفيذ :</span> <span>'+ph(place, '............')+'</span></div>'
+          +'<div class="meta-side-cell" style="justify-content:center;font-weight:700;color:#1a5276;">نسبة تحقيق الهدف: '+ph(pct, '....%')+'</div>'
+        +'</div>'
+      +'</div>'
+
+      +'<div style="margin:10px 14px 0;">'
+        +'<div class="section-box full">'
+          +'<span class="sec-head">الأهداف :</span>'
+          +'<ul class="obj-list">'+objHTML+'</ul>'
+        +'</div>'
+      +'</div>'
+
+      +'<div style="margin:6px 14px 4px;"><div class="sec-head" style="display:block;text-align:center;">شواهد</div></div>'
+      +'<div class="shawahid-grid">'+imgHTML+'</div>'
+
+      +'<div class="pos-box">'
+        +'<div class="sec-head">الإيجابيات</div>'
+        +'<div class="pos-text">'
+          +'<span class="pos-bold">'+ph(posTitle, 'عنوان الإيجابية')+':</span> '
+          +(posText && posText.trim() !== '' ? esc(posText) : '<span class="placeholder">اكتب وصف الإيجابية هنا ...</span>')
+        +'</div>'
+      +'</div>'
+
+      +'<div class="footer-bar">'
+        +'<span>رائد النشاط / '+ph(leader, '............')+'</span>'
+        +'<span>مدير المدرسة : '+ph(principal, '............')+'</span>'
+      +'</div>';
+  }
+
+  function esc(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  buildImgUI();
+  render();
+</script>
+</body>
+</html>
