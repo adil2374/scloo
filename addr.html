@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تقرير STEMS</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f0f0f0; direction: rtl; }
+  .app { display: flex; gap: 0; min-height: 100vh; }
+
+  /* FORM PANEL */
+  .form-panel { width: 400px; min-width: 340px; background: #fff; padding: 20px; overflow-y: auto; border-left: 2px solid #ddd; }
+  .form-panel h2 { font-size: 16px; font-weight: 700; color: #1a5276; margin-bottom: 16px; border-bottom: 2px solid #1a5276; padding-bottom: 8px; }
+  .field-group { margin-bottom: 12px; }
+  .field-group label { display: block; font-size: 12px; font-weight: 600; color: #444; margin-bottom: 4px; }
+  .field-group input, .field-group textarea, .field-group select {
+    width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px;
+    font-family: inherit; direction: rtl; background: #fafafa;
+  }
+  .field-group textarea { resize: vertical; min-height: 70px; }
+  .field-group input:focus, .field-group textarea:focus { outline: none; border-color: #1a5276; background: #fff; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .section-title { font-size: 13px; font-weight: 700; color: #1a5276; background: #eaf0fb; padding: 6px 10px; border-radius: 5px; margin: 14px 0 8px; }
+
+  .obj-item { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 6px; }
+  .obj-item textarea { flex: 1; min-height: 50px; font-size: 12px; }
+  .btn-remove { background: #e74c3c; color: #fff; border: none; border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 13px; flex-shrink: 0; }
+  .btn-add { background: #1a5276; color: #fff; border: none; border-radius: 5px; cursor: pointer; padding: 7px 14px; font-size: 12px; margin-top: 4px; }
+
+  .img-item { margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; padding: 8px; background: #fafafa; }
+  .img-item label { font-size: 11px; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+  .img-item input[type=text] { margin-top: 5px; }
+  .img-item input[type=file] { font-size: 11px; }
+
+  .btn-print { width: 100%; background: #27ae60; color: #fff; border: none; border-radius: 6px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+  .btn-print:hover { background: #219a52; }
+
+  /* PREVIEW PANEL */
+  .preview-panel { flex: 1; padding: 20px; overflow-y: auto; }
+  .report-wrap { width: 794px; margin: 0 auto; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+
+  /* REPORT STYLES */
+  .report { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: rtl; width: 794px; }
+
+  .top-bar { background: #1a5276; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 8px 20px; }
+  .top-bar-right, .top-bar-left { font-size: 13px; font-weight: 700; }
+  .top-bar-center { font-size: 11px; text-align: center; }
+
+  .report-title-bar { background: #1a5276; color: #fff; text-align: center; padding: 8px; font-size: 16px; font-weight: 700; margin: 10px 14px 0; border-radius: 6px 6px 0 0; }
+
+  .meta-bar { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid #1a5276; margin: 0 14px; }
+  .meta-col { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-left: 2px solid #1a5276; font-size: 13px; }
+  .meta-col:last-child { border-left: none; }
+  .meta-label { font-weight: 700; color: #1a5276; white-space: nowrap; }
+  .meta-val { color: #222; }
+
+  .meta-side { display: flex; flex-direction: column; border: 2px solid #1a5276; border-top: none; margin: 0 14px; }
+  .meta-side-row { display: flex; justify-content: space-between; border-bottom: 1.5px solid #1a5276; font-size: 12px; }
+  .meta-side-row:last-child { border-bottom: none; }
+  .meta-side-cell { padding: 5px 12px; display: flex; gap: 5px; align-items: center; flex: 1; border-left: 1.5px solid #1a5276; }
+  .meta-side-cell:last-child { border-left: none; }
+
+  .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 10px 14px; }
+  .section-box { border: 2px solid #1a5276; border-radius: 4px; padding: 10px 12px; }
+  .section-box.full { grid-column: 1 / -1; margin-bottom: 8px; }
+  .section-box + .section-box { margin-right: 8px; }
+  .sec-head { background: #1a5276; color: #fff; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 3px; margin-bottom: 8px; display: inline-block; }
+
+  .obj-list { list-style: none; padding: 0; }
+  .obj-list li { font-size: 12px; color: #222; padding: 4px 0; border-bottom: 1px dotted #ccc; display: flex; gap: 6px; }
+  .obj-list li:last-child { border-bottom: none; }
+  .obj-list li::before { content: "•"; color: #1a5276; font-weight: 900; font-size: 16px; line-height: 1; }
+
+  .shawahid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 14px; }
+  .shawahid-item { border: 2px solid #1a5276; border-radius: 4px; overflow: hidden; text-align: center; }
+  .shawahid-img { width: 100%; height: 120px; object-fit: cover; display: block; background: #eee; }
+  .shawahid-img-placeholder { width: 100%; height: 120px; background: #d0d8e4; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #555; }
+  .shawahid-cap { background: #1a5276; color: #fff; font-size: 11px; padding: 4px 8px; font-weight: 600; }
+
+  .pos-box { border: 2px solid #1a5276; margin: 0 14px 10px; border-radius: 4px; padding: 10px 14px; }
+  .pos-title { font-size: 13px; font-weight: 700; color: #1a5276; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+  .pos-text { font-size: 12px; color: #222; line-height: 1.7; }
+  .pos-bold { font-weight: 700; color: #1a5276; }
+
+  .footer-bar { background: #1a5276; color: #fff; display: flex; justify-content: space-between; margin: 0 14px 14px; padding: 8px 16px; border-radius: 0 0 4px 4px; font-size: 12px; font-weight: 600; }
+
+  @media print {
+    body { background: none; }
+    .form-panel { display: none; }
+    .preview-panel { padding: 0; }
+    .report-wrap { box-shadow: none; }
+    @page { margin: 0; size: A4; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- FORM PANEL -->
+  <div class="form-panel">
+    <h2>✏️ بيانات التقرير</h2>
+
+    <div class="field-group">
+      <label>اسم المدرسة</label>
+      <input type="text" id="f_school" value="ابتدائية ومتوسطة المعساجوكن" oninput="render()">
+    </div>
+    <div class="row2">
+      <div class="field-group">
+        <label>اسم المنفذ</label>
+        <input type="text" id="f_name" value="مروان دسوقي" oninput="render()">
+      </div>
+      <div class="field-group">
+        <label>التخصص</label>
+        <input type="text" id="f_spec" value="مهارات رقمية" oninput="render()">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field-group">
+        <label>الفصل الدراسي</label>
+        <input type="text" id="f_sem" value="الأول" oninput="render()">
+      </div>
+      <div class="field-group">
+        <label>الصف الدراسي</label>
+        <input type="text" id="f_grade" value="الرابع أ" oninput="render()">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field-group">
+        <label>التاريخ</label>
+        <input type="text" id="f_date" value="1447/10/25" oninput="render()">
+      </div>
+      <div class="field-group">
+        <label>مكان التنفيذ</label>
+        <input type="text" id="f_place" value="داخل الفصل" oninput="render()">
+      </div>
+    </div>
+    <div class="field-group">
+      <label>نسبة تحقيق الهدف</label>
+      <input type="text" id="f_pct" value="100%" oninput="render()">
+    </div>
+
+    <div class="section-title">📌 الأهداف</div>
+    <div id="obj-list"></div>
+    <button class="btn-add" onclick="addObj()">+ إضافة هدف</button>
+
+    <div class="section-title">📷 الشواهد (4 صور)</div>
+    <div id="img-list"></div>
+
+    <div class="section-title">✅ الإيجابيات</div>
+    <div class="field-group">
+      <label>عنوان الإيجابية</label>
+      <input type="text" id="f_pos_title" value="رفع مستوى الدافعية" oninput="render()">
+    </div>
+    <div class="field-group">
+      <label>نص الإيجابية</label>
+      <textarea id="f_pos_text" oninput="render()">ربط الدرس بكشاف "متعطل" حقيقي يمنح التعلم قيمة نفعية؛ فالطالب يشعر بأنه يمتلك مهارة تقنية تمكنه من فهم وإصلاح بيئته المحيطة، مما يزيد من اعتزازه بما يتعلم.</textarea>
+    </div>
+
+    <div class="section-title">👤 المسؤولون</div>
+    <div class="row2">
+      <div class="field-group">
+        <label>رائد النشاط</label>
+        <input type="text" id="f_leader" value="خالد الزهيراهني" oninput="render()">
+      </div>
+      <div class="field-group">
+        <label>مدير المدرسة</label>
+        <input type="text" id="f_principal" value="انور اليندي" oninput="render()">
+      </div>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+  </div>
+
+  <!-- PREVIEW PANEL -->
+  <div class="preview-panel">
+    <div class="report-wrap">
+      <div class="report" id="report-output"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var objectives = [
+    "تطبيق نهج STEM: دمج العلوم (الكهرباء) بالتقنية والهندسة (تصميم الكشاف) والرياضيات (قياسات الجهد أو الأبعاد).",
+    "تحليل المكونات: تحديد الأجزاء الرئيسية للدائرة الكهربائية البسيطة (مصدر طاقة، موصل، حمل).",
+    "تنمية مهارات الاستقصاء: اكتشاف الأخطاء والأعطال من خلال التفكيك والملاحظة المباشرة.",
+    "ربط التعلم بالحياة: إدراك أن ما يدرسه الطالب في الكتاب هو نفسه ما يشغل الأجهزة في منزله."
+  ];
+
+  var images = [
+    { label: "بداية العرض", src: null },
+    { label: "بناء المنطق البرمجي", src: null },
+    { label: "البرمجة وخوارزمية اتخاذ القرار", src: null },
+    { label: "تدريب نموذج", src: null }
+  ];
+
+  function g(id) { return document.getElementById(id); }
+
+  function buildObjUI() {
+    var c = g('obj-list'); c.innerHTML = '';
+    objectives.forEach(function(o, i) {
+      var d = document.createElement('div'); d.className = 'obj-item';
+      d.innerHTML = '<textarea oninput="objectives['+i+']=this.value;render()">'+o+'</textarea><button class="btn-remove" onclick="objectives.splice('+i+',1);buildObjUI();render()">✕</button>';
+      c.appendChild(d);
+    });
+  }
+
+  function addObj() { objectives.push(''); buildObjUI(); render(); }
+
+  function buildImgUI() {
+    var c = g('img-list'); c.innerHTML = '';
+    images.forEach(function(img, i) {
+      var d = document.createElement('div'); d.className = 'img-item';
+      d.innerHTML = '<label>صورة '+(i+1)+'</label>'
+        +'<input type="file" accept="image/*" onchange="handleImg(event,'+i+')">'
+        +'<input type="text" placeholder="التسمية التوضيحية" value="'+img.label+'" oninput="images['+i+'].label=this.value;render()">';
+      c.appendChild(d);
+    });
+  }
+
+  function handleImg(e, i) {
+    var f = e.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function(ev) { images[i].src = ev.target.result; render(); };
+    r.readAsDataURL(f);
+  }
+
+  function render() {
+    var school = g('f_school').value;
+    var name = g('f_name').value;
+    var spec = g('f_spec').value;
+    var sem = g('f_sem').value;
+    var grade = g('f_grade').value;
+    var date = g('f_date').value;
+    var place = g('f_place').value;
+    var pct = g('f_pct').value;
+    var posTitle = g('f_pos_title').value;
+    var posText = g('f_pos_text').value;
+    var leader = g('f_leader').value;
+    var principal = g('f_principal').value;
+
+    var objHTML = objectives.map(function(o) {
+      return '<li>'+esc(o)+'</li>';
+    }).join('');
+
+    var imgHTML = images.map(function(img) {
+      var imgEl = img.src
+        ? '<img class="shawahid-img" src="'+img.src+'">'
+        : '<div class="shawahid-img-placeholder">انقر لرفع صورة</div>';
+      return '<div class="shawahid-item">'+imgEl+'<div class="shawahid-cap">'+esc(img.label)+'</div></div>';
+    }).join('');
+
+    g('report-output').innerHTML =
+      '<div class="top-bar">'
+        +'<div class="top-bar-right">الإدارة العامة للتعليم بمنطقة مكة المكرمة</div>'
+        +'<div class="top-bar-center"><img src="" onerror="this.style.display=\'none\'"></div>'
+        +'<div class="top-bar-left">'+esc(school)+'</div>'
+      +'</div>'
+
+      +'<div class="report-title-bar">تقرير تفعيل حصة نشاط عن STEMS</div>'
+
+      +'<div class="meta-bar">'
+        +'<div class="meta-col"><span class="meta-label">المـنـفـذ :</span><span class="meta-val">'+esc(name)+'</span></div>'
+        +'<div class="meta-col"><span class="meta-label">التخصص :</span><span class="meta-val">'+esc(spec)+'</span></div>'
+      +'</div>'
+
+      +'<div class="meta-side">'
+        +'<div class="meta-side-row">'
+          +'<div class="meta-side-cell"><span class="meta-label">الفصل الدراسي :</span> <span>'+esc(sem)+'</span></div>'
+          +'<div class="meta-side-cell"><span class="meta-label">الصف الدراسي :</span> <span>'+esc(grade)+'</span></div>'
+        +'</div>'
+        +'<div class="meta-side-row">'
+          +'<div class="meta-side-cell"><span class="meta-label">التاريخ :</span> <span>'+esc(date)+'</span></div>'
+          +'<div class="meta-side-cell"><span class="meta-label">مكان التنفيذ :</span> <span>'+esc(place)+'</span></div>'
+        +'</div>'
+        +'<div class="meta-side-row">'
+          +'<div class="meta-side-cell" style="justify-content:center;font-weight:700;color:#1a5276;font-size:13px;">نسبة تحقيق الهدف: '+esc(pct)+'</div>'
+        +'</div>'
+      +'</div>'
+
+      +'<div style="margin:10px 14px 0;">'
+        +'<div class="section-box full">'
+          +'<span class="sec-head">الأهداف :</span>'
+          +'<ul class="obj-list">'+objHTML+'</ul>'
+        +'</div>'
+      +'</div>'
+
+      +'<div style="margin:6px 14px 4px;"><div class="sec-head" style="display:block;text-align:center;">شواهد</div></div>'
+      +'<div class="shawahid-grid">'+imgHTML+'</div>'
+
+      +'<div class="pos-box">'
+        +'<div class="sec-head">الإيجابيات</div>'
+        +'<div class="pos-text"><span class="pos-bold">'+esc(posTitle)+':</span> '+esc(posText)+'</div>'
+      +'</div>'
+
+      +'<div class="footer-bar">'
+        +'<span>رائد النشاط / '+esc(leader)+'</span>'
+        +'<span>مدير المدرسة : '+esc(principal)+'</span>'
+      +'</div>';
+  }
+
+  function esc(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  buildObjUI();
+  buildImgUI();
+  render();
+</script>
+</body>
+</html>
